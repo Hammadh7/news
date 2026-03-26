@@ -1,10 +1,6 @@
-import fs from "fs";
-import path from "path";
-import matter from "gray-matter";
+import { list, put, del } from "@vercel/blob";
 import { remark } from "remark";
 import html from "remark-html";
-
-const articlesDirectory = path.join(process.cwd(), "content/articles");
 
 export interface Article {
   slug: string;
@@ -23,51 +19,52 @@ export interface Article {
   excerpt: string;
 }
 
-function ensureArticlesDir() {
-  if (!fs.existsSync(articlesDirectory)) {
-    fs.mkdirSync(articlesDirectory, { recursive: true });
+const ARTICLES_PREFIX = "articles/";
+
+function articleToJson(article: Article): string {
+  return JSON.stringify(article);
+}
+
+function jsonToArticle(json: string): Article {
+  return JSON.parse(json);
+}
+
+export async function getAllArticles(): Promise<Article[]> {
+  try {
+    const { blobs } = await list({ prefix: ARTICLES_PREFIX });
+    if (blobs.length === 0) return [];
+
+    const articles: Article[] = [];
+    for (const blob of blobs) {
+      try {
+        const res = await fetch(blob.url);
+        const text = await res.text();
+        const article = jsonToArticle(text);
+        articles.push(article);
+      } catch {
+        // skip corrupted blobs
+      }
+    }
+
+    return articles.sort(
+      (a, b) => new Date(b.date).getTime() - new Date(a.date).getTime()
+    );
+  } catch {
+    return [];
   }
 }
 
-export function getAllArticles(): Article[] {
-  ensureArticlesDir();
-  const fileNames = fs.readdirSync(articlesDirectory);
-  const articles = fileNames
-    .filter((f) => f.endsWith(".md"))
-    .map((fileName) => {
-      const slug = fileName.replace(/\.md$/, "");
-      return getArticleBySlug(slug);
-    })
-    .filter((a): a is Article => a !== null)
-    .sort((a, b) => new Date(b.date).getTime() - new Date(a.date).getTime());
+export async function getArticleBySlug(slug: string): Promise<Article | null> {
+  try {
+    const { blobs } = await list({ prefix: `${ARTICLES_PREFIX}${slug}.json` });
+    if (blobs.length === 0) return null;
 
-  return articles;
-}
-
-export function getArticleBySlug(slug: string): Article | null {
-  ensureArticlesDir();
-  const fullPath = path.join(articlesDirectory, `${slug}.md`);
-  if (!fs.existsSync(fullPath)) return null;
-
-  const fileContents = fs.readFileSync(fullPath, "utf8");
-  const { data, content } = matter(fileContents);
-
-  return {
-    slug,
-    title: data.title || "",
-    subtitle: data.subtitle || "",
-    author: data.author || "Staff Reporter",
-    date: data.date || new Date().toISOString(),
-    section: data.section || "india",
-    tags: data.tags || [],
-    image: data.image || "",
-    imageCaption: data.imageCaption || "",
-    featured: data.featured || false,
-    breaking: data.breaking || false,
-    content,
-    excerpt:
-      data.excerpt || content.replace(/[#*_\[\]]/g, "").substring(0, 200) + "...",
-  };
+    const res = await fetch(blobs[0].url);
+    const text = await res.text();
+    return jsonToArticle(text);
+  } catch {
+    return null;
+  }
 }
 
 export async function getArticleHtml(content: string): Promise<string> {
@@ -75,51 +72,54 @@ export async function getArticleHtml(content: string): Promise<string> {
   return result.toString();
 }
 
-export function getArticlesBySection(section: string): Article[] {
-  return getAllArticles().filter(
-    (a) => a.section.toLowerCase() === section.toLowerCase()
-  );
+export async function getArticlesBySection(section: string): Promise<Article[]> {
+  const all = await getAllArticles();
+  return all.filter((a) => a.section.toLowerCase() === section.toLowerCase());
 }
 
-export function getFeaturedArticles(): Article[] {
-  return getAllArticles().filter((a) => a.featured);
+export async function getFeaturedArticles(): Promise<Article[]> {
+  const all = await getAllArticles();
+  return all.filter((a) => a.featured);
 }
 
-export function getBreakingNews(): Article[] {
-  return getAllArticles().filter((a) => a.breaking);
+export async function getBreakingNews(): Promise<Article[]> {
+  const all = await getAllArticles();
+  return all.filter((a) => a.breaking);
 }
 
-export function saveArticle(article: Article): void {
-  ensureArticlesDir();
-  // eslint-disable-next-line @typescript-eslint/no-unused-vars
-  const { content, htmlContent: _unused, ...frontmatterData } = article;
-  const slug = article.slug || article.title.toLowerCase().replace(/[^a-z0-9]+/g, "-").replace(/(^-|-$)/g, "");
+export async function saveArticle(article: Article): Promise<void> {
+  const slug =
+    article.slug ||
+    article.title
+      .toLowerCase()
+      .replace(/[^a-z0-9]+/g, "-")
+      .replace(/(^-|-$)/g, "");
 
-  const md = matter.stringify(content, {
-    ...frontmatterData,
-    slug: undefined,
-  } as Record<string, unknown>);
+  const data: Article = {
+    ...article,
+    slug,
+    excerpt:
+      article.excerpt ||
+      article.content.replace(/[#*_\[\]]/g, "").substring(0, 200) + "...",
+  };
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  delete (data as any).htmlContent;
 
-  fs.writeFileSync(path.join(articlesDirectory, `${slug}.md`), md);
+  await put(`${ARTICLES_PREFIX}${slug}.json`, articleToJson(data), {
+    access: "public",
+    addRandomSuffix: false,
+    contentType: "application/json",
+  });
 }
 
-export function deleteArticle(slug: string): boolean {
-  const fullPath = path.join(articlesDirectory, `${slug}.md`);
-  if (fs.existsSync(fullPath)) {
-    fs.unlinkSync(fullPath);
+export async function deleteArticle(slug: string): Promise<boolean> {
+  try {
+    const { blobs } = await list({ prefix: `${ARTICLES_PREFIX}${slug}.json` });
+    if (blobs.length === 0) return false;
+
+    await del(blobs[0].url);
     return true;
+  } catch {
+    return false;
   }
-  return false;
-}
-
-export function getAllSections(): string[] {
-  const articles = getAllArticles();
-  const sections = new Set(articles.map((a) => a.section));
-  return Array.from(sections);
-}
-
-export function getAllTags(): string[] {
-  const articles = getAllArticles();
-  const tags = new Set(articles.flatMap((a) => a.tags));
-  return Array.from(tags);
 }

@@ -6,11 +6,10 @@ import Link from "next/link";
 
 export const dynamic = "force-dynamic";
 
-export default function HomePage() {
-  const allArticles = getAllArticles();
-  const featured = getFeaturedArticles();
-  const breaking = getBreakingNews();
-
+export default async function HomePage() {
+  const allArticles = await getAllArticles();
+  const featured = await getFeaturedArticles();
+  const breaking = await getBreakingNews();
 
   // Group articles by section for section blocks
   const sectionGroups = siteConfig.sections

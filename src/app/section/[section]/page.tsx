@@ -24,13 +24,13 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
   };
 }
 
-export default function SectionPage({ params }: Props) {
+export default async function SectionPage({ params }: Props) {
   const section = siteConfig.sections.find(
     (s) => s.slug.toLowerCase() === params.section.toLowerCase()
   );
   if (!section) notFound();
 
-  const articles = getArticlesBySection(params.section);
+  const articles = await getArticlesBySection(params.section);
 
   return (
     <div className="max-w-7xl mx-auto px-4 py-8">

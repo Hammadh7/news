@@ -18,14 +18,16 @@ export async function GET(request: NextRequest) {
   const slug = searchParams.get("slug");
 
   if (slug) {
-    const article = getArticleBySlug(slug);
+    const article = await getArticleBySlug(slug);
     if (!article) {
       return NextResponse.json({ error: "Article not found" }, { status: 404 });
     }
     return NextResponse.json(article);
   }
 
-  const articles = section ? getArticlesBySection(section) : getAllArticles();
+  const articles = section
+    ? await getArticlesBySection(section)
+    : await getAllArticles();
   return NextResponse.json(articles);
 }
 
@@ -61,9 +63,10 @@ export async function POST(request: NextRequest) {
         (data.content || "").replace(/[#*_\[\]]/g, "").substring(0, 200) + "...",
     };
 
-    saveArticle(article);
+    await saveArticle(article);
     return NextResponse.json({ success: true, slug });
-  } catch {
+  } catch (err) {
+    console.error("Failed to save article:", err);
     return NextResponse.json({ error: "Failed to save article" }, { status: 500 });
   }
 }
@@ -79,7 +82,7 @@ export async function PUT(request: NextRequest) {
       return NextResponse.json({ error: "Slug is required" }, { status: 400 });
     }
 
-    const existing = getArticleBySlug(data.slug);
+    const existing = await getArticleBySlug(data.slug);
     if (!existing) {
       return NextResponse.json({ error: "Article not found" }, { status: 404 });
     }
@@ -92,9 +95,10 @@ export async function PUT(request: NextRequest) {
         (data.content || existing.content).replace(/[#*_\[\]]/g, "").substring(0, 200) + "...",
     };
 
-    saveArticle(article);
+    await saveArticle(article);
     return NextResponse.json({ success: true, slug: data.slug });
-  } catch {
+  } catch (err) {
+    console.error("Failed to update article:", err);
     return NextResponse.json({ error: "Failed to update article" }, { status: 500 });
   }
 }
@@ -111,7 +115,7 @@ export async function DELETE(request: NextRequest) {
     return NextResponse.json({ error: "Slug is required" }, { status: 400 });
   }
 
-  const deleted = deleteArticle(slug);
+  const deleted = await deleteArticle(slug);
   if (!deleted) {
     return NextResponse.json({ error: "Article not found" }, { status: 404 });
   }

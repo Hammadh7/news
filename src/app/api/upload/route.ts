@@ -1,6 +1,5 @@
 import { NextRequest, NextResponse } from "next/server";
-import { writeFile, mkdir } from "fs/promises";
-import path from "path";
+import { put } from "@vercel/blob";
 
 function isAuthenticated(request: NextRequest): boolean {
   const token = request.cookies.get("admin-token")?.value;
@@ -35,25 +34,22 @@ export async function POST(request: NextRequest) {
       );
     }
 
-    const bytes = await file.arrayBuffer();
-    const buffer = Buffer.from(bytes);
-
     const ext = file.name.split(".").pop() || "jpg";
     const timestamp = Date.now();
     const safeName = file.name
       .replace(/\.[^/.]+$/, "")
       .replace(/[^a-z0-9]/gi, "-")
       .toLowerCase();
-    const fileName = `${safeName}-${timestamp}.${ext}`;
+    const fileName = `images/${safeName}-${timestamp}.${ext}`;
 
-    const uploadDir = path.join(process.cwd(), "public/images/articles");
-    await mkdir(uploadDir, { recursive: true });
+    const blob = await put(fileName, file, {
+      access: "public",
+      addRandomSuffix: false,
+    });
 
-    await writeFile(path.join(uploadDir, fileName), buffer);
-
-    const url = `/images/articles/${fileName}`;
-    return NextResponse.json({ success: true, url });
-  } catch {
+    return NextResponse.json({ success: true, url: blob.url });
+  } catch (err) {
+    console.error("Upload failed:", err);
     return NextResponse.json(
       { error: "Failed to upload file" },
       { status: 500 }

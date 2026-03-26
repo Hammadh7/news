@@ -14,7 +14,7 @@ interface Props {
 }
 
 export async function generateMetadata({ params }: Props): Promise<Metadata> {
-  const article = getArticleBySlug(params.slug);
+  const article = await getArticleBySlug(params.slug);
   if (!article) return { title: "Article Not Found" };
 
   return {
@@ -32,11 +32,11 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
 }
 
 export default async function ArticlePage({ params }: Props) {
-  const article = getArticleBySlug(params.slug);
+  const article = await getArticleBySlug(params.slug);
   if (!article) notFound();
 
   const htmlContent = await getArticleHtml(article.content);
-  const relatedArticles = getArticlesBySection(article.section)
+  const relatedArticles = (await getArticlesBySection(article.section))
     .filter((a) => a.slug !== article.slug)
     .slice(0, 4);
 
