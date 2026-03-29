@@ -14,10 +14,7 @@ export const siteConfig = {
     { name: "Sports", slug: "sports", icon: "trophy" },
     { name: "Entertainment", slug: "entertainment", icon: "film" },
     { name: "Opinion", slug: "opinion", icon: "message-circle" },
-    { name: "Science", slug: "science", icon: "flask" },
     { name: "Health", slug: "health", icon: "heart" },
-    { name: "Culture", slug: "culture", icon: "palette" },
-    { name: "States", slug: "states", icon: "map" },
     { name: "Cricket", slug: "cricket", icon: "circle-dot" },
   ],
   languages: [
