@@ -85,9 +85,19 @@ export async function PUT(request: NextRequest) {
 
     const article = {
       ...existing,
-      ...data,
+      title: data.title ?? existing.title,
+      subtitle: data.subtitle ?? existing.subtitle,
+      author: data.author ?? existing.author,
+      section: data.section ?? existing.section,
+      tags: data.tags ?? existing.tags,
+      image: data.image ?? existing.image,
+      imageCaption: data.imageCaption ?? existing.imageCaption,
+      content: data.content ?? existing.content,
+      featured: data.featured ?? existing.featured,
+      breaking: data.breaking ?? existing.breaking,
+      slug: data.slug,
+      date: existing.date,
       excerpt:
-        data.excerpt ||
         (data.content || existing.content).replace(/[#*_\[\]]/g, "").substring(0, 200) + "...",
     };
 
@@ -95,7 +105,8 @@ export async function PUT(request: NextRequest) {
     return NextResponse.json({ success: true, slug: data.slug });
   } catch (err) {
     console.error("Failed to update article:", err);
-    return NextResponse.json({ error: "Failed to update article" }, { status: 500 });
+    const message = err instanceof Error ? err.message : "Unknown error";
+    return NextResponse.json({ error: `Failed to update: ${message}` }, { status: 500 });
   }
 }
 

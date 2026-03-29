@@ -122,6 +122,16 @@ export async function saveArticle(article: Article): Promise<void> {
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
   delete (data as any).htmlContent;
 
+  // Delete existing blob first to avoid overwrite issues
+  try {
+    const { blobs } = await list({ prefix: `${ARTICLES_PREFIX}${slug}.json` });
+    if (blobs.length > 0) {
+      await del(blobs[0].url);
+    }
+  } catch {
+    // ignore delete errors on new articles
+  }
+
   await put(`${ARTICLES_PREFIX}${slug}.json`, articleToJson(data), {
     access: "public",
     addRandomSuffix: false,
