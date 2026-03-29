@@ -37,7 +37,7 @@ export async function getAllArticles(): Promise<Article[]> {
     const articles: Article[] = [];
     for (const blob of blobs) {
       try {
-        const res = await fetch(blob.url);
+        const res = await fetch(blob.url, { cache: "no-store" });
         const text = await res.text();
         const article = jsonToArticle(text);
         articles.push(article);
@@ -59,7 +59,7 @@ export async function getArticleBySlug(slug: string): Promise<Article | null> {
     const { blobs } = await list({ prefix: `${ARTICLES_PREFIX}${slug}.json` });
     if (blobs.length === 0) return null;
 
-    const res = await fetch(blobs[0].url);
+    const res = await fetch(blobs[0].url, { cache: "no-store" });
     const text = await res.text();
     return jsonToArticle(text);
   } catch {
