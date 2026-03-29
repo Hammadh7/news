@@ -61,12 +61,9 @@ export async function POST(request: NextRequest) {
       );
     }
 
-    if (targetLang === "en") {
-      return NextResponse.json({ title, subtitle, text });
-    }
-
     // Language code mapping for Google Translate
     const langMap: Record<string, string> = {
+      en: "en",
       hi: "hi",
       ta: "ta",
       te: "te",

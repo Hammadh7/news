@@ -18,7 +18,7 @@ export default function TranslatableArticle({
   rawContent,
   children,
 }: Props) {
-  const [selectedLang, setSelectedLang] = useState("en");
+  const [selectedLang, setSelectedLang] = useState("original");
   const [translatedTitle, setTranslatedTitle] = useState(title);
   const [translatedSubtitle, setTranslatedSubtitle] = useState(subtitle);
   const [translatedHtml, setTranslatedHtml] = useState(htmlContent);
@@ -26,7 +26,7 @@ export default function TranslatableArticle({
   const [cache, setCache] = useState<
     Record<string, { title: string; subtitle: string; html: string }>
   >({
-    en: { title, subtitle, html: htmlContent },
+    original: { title, subtitle, html: htmlContent },
   });
 
   const handleTranslate = useCallback(
@@ -40,7 +40,7 @@ export default function TranslatableArticle({
         return;
       }
 
-      if (langCode === "en") {
+      if (langCode === "original") {
         setTranslatedTitle(title);
         setTranslatedSubtitle(subtitle);
         setTranslatedHtml(htmlContent);
@@ -94,7 +94,7 @@ export default function TranslatableArticle({
         setCache((prev) => ({ ...prev, [langCode]: result }));
       } catch {
         alert("Translation failed. Please try again.");
-        setSelectedLang("en");
+        setSelectedLang("original");
         setTranslatedTitle(title);
         setTranslatedSubtitle(subtitle);
         setTranslatedHtml(htmlContent);
@@ -129,6 +129,7 @@ export default function TranslatableArticle({
           disabled={loading}
           className="text-sm font-sans border border-gray-200 rounded-md px-2.5 py-1.5 outline-none focus:ring-2 focus:ring-black focus:border-black bg-white disabled:opacity-50"
         >
+          <option value="original">Original</option>
           {languages.map((lang) => (
             <option key={lang.code} value={lang.code}>
               {lang.nativeName}
@@ -159,7 +160,7 @@ export default function TranslatableArticle({
             Translating...
           </span>
         )}
-        {selectedLang !== "en" && !loading && (
+        {selectedLang !== "original" && !loading && (
           <span className="text-[10px] text-gray-400 font-sans italic">
             Auto-translated
           </span>
