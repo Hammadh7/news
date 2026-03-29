@@ -5,6 +5,7 @@ import {
   getArticlesBySection,
   saveArticle,
   deleteArticle,
+  generateSlug,
 } from "@/lib/articles";
 
 function isAuthenticated(request: NextRequest): boolean {
@@ -38,15 +39,7 @@ export async function POST(request: NextRequest) {
 
   try {
     const data = await request.json();
-    const slug =
-      data.slug ||
-      data.title
-        .toLowerCase()
-        .replace(/[^\p{L}\p{N}]+/gu, "-")
-        .replace(/(^-|-$)/g, "")
-        .substring(0, 100)
-        .replace(/-$/, "") ||
-      `article-${Date.now()}`;
+    const slug = data.slug || generateSlug(data.title, data.section);
 
     const article = {
       slug,

@@ -87,25 +87,30 @@ export async function getBreakingNews(): Promise<Article[]> {
   return all.filter((a) => a.breaking);
 }
 
-function generateSlug(title: string): string {
-  // First try: keep Unicode letters and digits (supports Hindi, Tamil, etc.)
+export function generateSlug(title: string, section?: string): string {
+  // Extract only ASCII letters and digits for clean URLs
   let slug = title
     .toLowerCase()
-    .replace(/[^\p{L}\p{N}]+/gu, "-")
+    .replace(/[^a-z0-9]+/g, "-")
     .replace(/(^-|-$)/g, "")
-    .substring(0, 100)
+    .substring(0, 80)
     .replace(/-$/, "");
 
-  // Fallback if slug is empty: use timestamp
-  if (!slug) {
-    slug = `article-${Date.now()}`;
+  // For non-English titles (Hindi, Tamil, etc.) slug will be empty
+  // Use section + date + short unique ID for a clean readable URL
+  if (!slug || slug.length < 3) {
+    const date = new Date();
+    const dateStr = `${date.getFullYear()}-${String(date.getMonth() + 1).padStart(2, "0")}-${String(date.getDate()).padStart(2, "0")}`;
+    const id = Math.random().toString(36).substring(2, 8);
+    const prefix = section || "article";
+    slug = `${prefix}-${dateStr}-${id}`;
   }
 
   return slug;
 }
 
 export async function saveArticle(article: Article): Promise<void> {
-  const slug = article.slug || generateSlug(article.title);
+  const slug = article.slug || generateSlug(article.title, article.section);
 
   const data: Article = {
     ...article,
