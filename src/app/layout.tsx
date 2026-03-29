@@ -3,6 +3,7 @@ import "./globals.css";
 import { siteConfig } from "@/lib/config";
 import Header from "@/components/Header";
 import Footer from "@/components/Footer";
+import MarketTicker from "@/components/MarketTicker";
 import { LanguageProvider } from "@/components/LanguageContext";
 import { Analytics } from "@vercel/analytics/next";
 
@@ -35,6 +36,7 @@ export default function RootLayout({
       </head>
       <body className="min-h-screen flex flex-col">
         <LanguageProvider>
+          <MarketTicker />
           <Header />
           <main className="flex-1">{children}</main>
           <Footer />
