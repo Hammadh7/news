@@ -64,28 +64,10 @@ export default function TranslatableArticle({
 
         const data = await res.json();
 
-        // Convert translated text to simple HTML paragraphs
-        const html = data.text
-          .split("\n")
-          .filter((line: string) => line.trim())
-          .map((line: string) => {
-            if (line.startsWith("# "))
-              return `<h1>${line.substring(2)}</h1>`;
-            if (line.startsWith("## "))
-              return `<h2>${line.substring(3)}</h2>`;
-            if (line.startsWith("### "))
-              return `<h3>${line.substring(4)}</h3>`;
-            if (line.startsWith("> "))
-              return `<blockquote><p>${line.substring(2)}</p></blockquote>`;
-            if (line.startsWith("- ")) return `<li>${line.substring(2)}</li>`;
-            return `<p>${line}</p>`;
-          })
-          .join("\n");
-
         const result = {
           title: data.title || title,
           subtitle: data.subtitle || subtitle,
-          html,
+          html: data.html || htmlContent,
         };
 
         setTranslatedTitle(result.title);

@@ -1,4 +1,5 @@
 import { NextRequest, NextResponse } from "next/server";
+import { getArticleHtml } from "@/lib/articles";
 
 export const dynamic = "force-dynamic";
 
@@ -92,10 +93,13 @@ export async function POST(request: NextRequest) {
         subtitle ? translateText(subtitle, gtLang) : Promise.resolve(""),
       ]);
 
+    // Convert translated markdown to HTML (preserves bold, italic, headings, etc.)
+    const translatedHtml = await getArticleHtml(translatedText);
+
     return NextResponse.json({
       title: translatedTitle,
       subtitle: translatedSubtitle,
-      text: translatedText,
+      html: translatedHtml,
     });
   } catch (err) {
     console.error("Translation error:", err);
