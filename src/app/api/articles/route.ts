@@ -43,7 +43,9 @@ export async function POST(request: NextRequest) {
       data.title
         .toLowerCase()
         .replace(/[^a-z0-9]+/g, "-")
-        .replace(/(^-|-$)/g, "");
+        .replace(/(^-|-$)/g, "")
+        .substring(0, 100)
+        .replace(/-$/, "");
 
     const article = {
       slug,
