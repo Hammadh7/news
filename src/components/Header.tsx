@@ -4,7 +4,7 @@ import Link from "next/link";
 import { useState } from "react";
 import { siteConfig } from "@/lib/config";
 import { useLanguage } from "./LanguageContext";
-import LanguageSwitcher from "./LanguageSwitcher";
+import ThoughtOfTheDay from "./ThoughtOfTheDay";
 
 export default function Header() {
   const [menuOpen, setMenuOpen] = useState(false);
@@ -26,7 +26,7 @@ export default function Header() {
         <div className="max-w-7xl mx-auto px-4 py-1.5 flex items-center justify-between text-xs text-gray-500 font-sans">
           <span>{today}</span>
           <div className="flex items-center gap-4">
-            <LanguageSwitcher compact />
+            <ThoughtOfTheDay />
           </div>
         </div>
       </div>
