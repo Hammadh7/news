@@ -87,15 +87,25 @@ export async function getBreakingNews(): Promise<Article[]> {
   return all.filter((a) => a.breaking);
 }
 
+function generateSlug(title: string): string {
+  // First try: keep Unicode letters and digits (supports Hindi, Tamil, etc.)
+  let slug = title
+    .toLowerCase()
+    .replace(/[^\p{L}\p{N}]+/gu, "-")
+    .replace(/(^-|-$)/g, "")
+    .substring(0, 100)
+    .replace(/-$/, "");
+
+  // Fallback if slug is empty: use timestamp
+  if (!slug) {
+    slug = `article-${Date.now()}`;
+  }
+
+  return slug;
+}
+
 export async function saveArticle(article: Article): Promise<void> {
-  const slug =
-    article.slug ||
-    article.title
-      .toLowerCase()
-      .replace(/[^a-z0-9]+/g, "-")
-      .replace(/(^-|-$)/g, "")
-      .substring(0, 100)
-      .replace(/-$/, "");
+  const slug = article.slug || generateSlug(article.title);
 
   const data: Article = {
     ...article,

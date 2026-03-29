@@ -42,10 +42,11 @@ export async function POST(request: NextRequest) {
       data.slug ||
       data.title
         .toLowerCase()
-        .replace(/[^a-z0-9]+/g, "-")
+        .replace(/[^\p{L}\p{N}]+/gu, "-")
         .replace(/(^-|-$)/g, "")
         .substring(0, 100)
-        .replace(/-$/, "");
+        .replace(/-$/, "") ||
+      `article-${Date.now()}`;
 
     const article = {
       slug,
