@@ -3,6 +3,7 @@ import { siteConfig } from "@/lib/config";
 import ArticleCard from "@/components/ArticleCard";
 import AdPlaceholder from "@/components/AdPlaceholder";
 import ShareButtons from "@/components/ShareButtons";
+import TranslatableArticle from "@/components/TranslatableArticle";
 import { notFound } from "next/navigation";
 import Link from "next/link";
 import type { Metadata } from "next";
@@ -65,51 +66,41 @@ export default async function ArticlePage({ params }: Props) {
             </Link>
           </div>
 
-          {/* Headline */}
-          <h1 className="font-serif text-3xl md:text-4xl lg:text-5xl font-bold text-gray-900 leading-tight mb-3">
-            {article.title}
-          </h1>
-
-          {article.subtitle && (
-            <p className="text-lg md:text-xl text-gray-600 font-sans leading-relaxed mb-4">
-              {article.subtitle}
-            </p>
-          )}
-
-          {/* Meta */}
-          <div className="flex flex-wrap items-center gap-4 py-4 border-t border-b border-gray-200 mb-6">
-            <div className="font-sans">
-              <span className="text-sm font-medium text-gray-900">
-                {article.author}
-              </span>
-              <span className="block text-xs text-gray-500">{formattedDate}</span>
+          <TranslatableArticle
+            title={article.title}
+            subtitle={article.subtitle}
+            htmlContent={htmlContent}
+            rawContent={article.content}
+          >
+            {/* Meta */}
+            <div className="flex flex-wrap items-center gap-4 py-4 border-t border-b border-gray-200 mb-6">
+              <div className="font-sans">
+                <span className="text-sm font-medium text-gray-900">
+                  {article.author}
+                </span>
+                <span className="block text-xs text-gray-500">{formattedDate}</span>
+              </div>
+              <div className="ml-auto">
+                <ShareButtons url={articleUrl} title={article.title} />
+              </div>
             </div>
-            <div className="ml-auto">
-              <ShareButtons url={articleUrl} title={article.title} />
-            </div>
-          </div>
 
-          {/* Hero image */}
-          {article.image && (
-            <figure className="mb-8">
-              <img
-                src={article.image}
-                alt={article.imageCaption || article.title}
-                className="w-full aspect-[16/9] object-cover"
-              />
-              {article.imageCaption && (
-                <figcaption className="text-xs text-gray-500 font-sans mt-2 italic">
-                  {article.imageCaption}
-                </figcaption>
-              )}
-            </figure>
-          )}
-
-          {/* Article body */}
-          <div
-            className="article-content"
-            dangerouslySetInnerHTML={{ __html: htmlContent }}
-          />
+            {/* Hero image */}
+            {article.image && (
+              <figure className="mb-8">
+                <img
+                  src={article.image}
+                  alt={article.imageCaption || article.title}
+                  className="w-full aspect-[16/9] object-cover"
+                />
+                {article.imageCaption && (
+                  <figcaption className="text-xs text-gray-500 font-sans mt-2 italic">
+                    {article.imageCaption}
+                  </figcaption>
+                )}
+              </figure>
+            )}
+          </TranslatableArticle>
 
           {/* Tags */}
           {article.tags.length > 0 && (
