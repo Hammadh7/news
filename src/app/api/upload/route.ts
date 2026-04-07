@@ -1,5 +1,5 @@
 import { NextRequest, NextResponse } from "next/server";
-import { put } from "@vercel/blob";
+import { getDb } from "@/lib/db";
 
 function isAuthenticated(request: NextRequest): boolean {
   const token = request.cookies.get("admin-token")?.value;
@@ -40,14 +40,19 @@ export async function POST(request: NextRequest) {
       .replace(/\.[^/.]+$/, "")
       .replace(/[^a-z0-9]/gi, "-")
       .toLowerCase();
-    const fileName = `images/${safeName}-${timestamp}.${ext}`;
+    const id = `${safeName}-${timestamp}.${ext}`;
 
-    const blob = await put(fileName, file, {
-      access: "public",
-      addRandomSuffix: false,
-    });
+    const buffer = Buffer.from(await file.arrayBuffer());
+    const hexData = "\\x" + buffer.toString("hex");
 
-    return NextResponse.json({ success: true, url: blob.url });
+    const sql = getDb();
+    await sql`
+      INSERT INTO images (id, data, content_type)
+      VALUES (${id}, ${hexData}::bytea, ${file.type})
+      ON CONFLICT (id) DO NOTHING
+    `;
+
+    return NextResponse.json({ success: true, url: `/api/images/${id}` });
   } catch (err) {
     console.error("Upload failed:", err);
     return NextResponse.json(
