@@ -16,11 +16,11 @@ export async function GET(
 
     const { data, content_type } = rows[0];
 
-    // neon returns BYTEA as a hex string prefixed with \x
-    const hexStr = (data as string).slice(2); // remove \x prefix
-    const buffer = Buffer.from(hexStr, "hex");
+    const buffer = Buffer.isBuffer(data)
+      ? data
+      : Buffer.from(data as ArrayBuffer);
 
-    return new NextResponse(buffer, {
+    return new NextResponse(new Uint8Array(buffer), {
       headers: {
         "Content-Type": content_type as string,
         "Cache-Control": "public, max-age=31536000, immutable",
