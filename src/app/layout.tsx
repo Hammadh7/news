@@ -6,6 +6,7 @@ import Footer from "@/components/Footer";
 import MarketTicker from "@/components/MarketTicker";
 import { LanguageProvider } from "@/components/LanguageContext";
 import { Analytics } from "@vercel/analytics/next";
+import { SpeedInsights } from "@vercel/speed-insights/next";
 
 export const metadata: Metadata = {
   title: `${siteConfig.name} - ${siteConfig.tagline}`,
@@ -41,6 +42,7 @@ export default function RootLayout({
           <main className="flex-1">{children}</main>
           <Footer />
           <Analytics />
+          <SpeedInsights />
         </LanguageProvider>
       </body>
     </html>
