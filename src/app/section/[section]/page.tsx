@@ -18,9 +18,27 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
   );
   if (!section) return { title: "Section Not Found" };
 
+  const sectionUrl = `${siteConfig.url}/section/${section.slug}`;
+  const description = `Latest ${section.name} news from ${siteConfig.name}. Stay updated with breaking ${section.name.toLowerCase()} stories, analysis, and updates.`;
+
   return {
-    title: `${section.name} - ${siteConfig.name}`,
-    description: `Latest ${section.name} news from ${siteConfig.name}`,
+    title: `${section.name} News`,
+    description,
+    alternates: {
+      canonical: sectionUrl,
+    },
+    openGraph: {
+      title: `${section.name} News - ${siteConfig.name}`,
+      description,
+      type: "website",
+      url: sectionUrl,
+      siteName: siteConfig.name,
+    },
+    twitter: {
+      card: "summary",
+      title: `${section.name} News - ${siteConfig.name}`,
+      description,
+    },
   };
 }
 

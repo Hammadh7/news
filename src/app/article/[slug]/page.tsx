@@ -18,17 +18,33 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
   const article = await getArticleBySlug(params.slug);
   if (!article) return { title: "Article Not Found" };
 
+  const articleUrl = `${siteConfig.url}/article/${article.slug}`;
+
   return {
-    title: `${article.title} - ${siteConfig.name}`,
+    title: article.title,
     description: article.excerpt,
+    alternates: {
+      canonical: articleUrl,
+    },
     openGraph: {
       title: article.title,
       description: article.excerpt,
       type: "article",
       publishedTime: article.date,
       authors: [article.author],
-      images: article.image ? [article.image] : [],
+      section: article.section,
+      tags: article.tags,
+      url: articleUrl,
+      siteName: siteConfig.name,
+      images: article.image ? [{ url: article.image.startsWith("/") ? `${siteConfig.url}${article.image}` : article.image, alt: article.imageCaption || article.title }] : [],
     },
+    twitter: {
+      card: "summary_large_image",
+      title: article.title,
+      description: article.excerpt,
+      images: article.image ? [article.image.startsWith("/") ? `${siteConfig.url}${article.image}` : article.image] : [],
+    },
+    keywords: article.tags,
   };
 }
 
@@ -49,8 +65,65 @@ export default async function ArticlePage({ params }: Props) {
     day: "numeric",
   });
 
+  const jsonLd = {
+    "@context": "https://schema.org",
+    "@type": "NewsArticle",
+    headline: article.title,
+    description: article.excerpt,
+    image: article.image ? [article.image.startsWith("/") ? `${siteConfig.url}${article.image}` : article.image] : [],
+    datePublished: article.date,
+    dateModified: article.date,
+    author: {
+      "@type": "Person",
+      name: article.author,
+    },
+    publisher: {
+      "@type": "Organization",
+      name: siteConfig.name,
+      url: siteConfig.url,
+    },
+    mainEntityOfPage: {
+      "@type": "WebPage",
+      "@id": articleUrl,
+    },
+    articleSection: article.section,
+    keywords: article.tags.join(", "),
+  };
+
+  const breadcrumbJsonLd = {
+    "@context": "https://schema.org",
+    "@type": "BreadcrumbList",
+    itemListElement: [
+      {
+        "@type": "ListItem",
+        position: 1,
+        name: "Home",
+        item: siteConfig.url,
+      },
+      {
+        "@type": "ListItem",
+        position: 2,
+        name: article.section,
+        item: `${siteConfig.url}/section/${article.section}`,
+      },
+      {
+        "@type": "ListItem",
+        position: 3,
+        name: article.title,
+      },
+    ],
+  };
+
   return (
     <div className="max-w-7xl mx-auto px-4 py-8">
+      <script
+        type="application/ld+json"
+        dangerouslySetInnerHTML={{ __html: JSON.stringify(jsonLd) }}
+      />
+      <script
+        type="application/ld+json"
+        dangerouslySetInnerHTML={{ __html: JSON.stringify(breadcrumbJsonLd) }}
+      />
       <div className="grid grid-cols-1 lg:grid-cols-12 gap-10">
         {/* Main article content */}
         <article className="lg:col-span-8">
