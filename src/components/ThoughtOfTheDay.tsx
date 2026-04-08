@@ -7,11 +7,42 @@ interface Quote {
   author: string;
 }
 
+const STORAGE_KEY = "thought-of-the-day";
+const FALLBACK: Quote = {
+  quote: "The best way to find yourself is to lose yourself in the service of others.",
+  author: "Mahatma Gandhi",
+};
+
+function getTodayKey() {
+  return new Date().toISOString().slice(0, 10);
+}
+
+function getCachedQuote(): Quote | null {
+  try {
+    const raw = localStorage.getItem(STORAGE_KEY);
+    if (!raw) return null;
+    const { date, quote } = JSON.parse(raw);
+    if (date === getTodayKey()) return quote;
+    return null;
+  } catch {
+    return null;
+  }
+}
+
+function cacheQuote(quote: Quote) {
+  localStorage.setItem(STORAGE_KEY, JSON.stringify({ date: getTodayKey(), quote }));
+}
+
 export default function ThoughtOfTheDay() {
   const [open, setOpen] = useState(false);
   const [quote, setQuote] = useState<Quote | null>(null);
   const [loading, setLoading] = useState(false);
   const ref = useRef<HTMLDivElement>(null);
+
+  useEffect(() => {
+    const cached = getCachedQuote();
+    if (cached) setQuote(cached);
+  }, []);
 
   useEffect(() => {
     function handleClick(e: MouseEvent) {
@@ -21,27 +52,36 @@ export default function ThoughtOfTheDay() {
     return () => document.removeEventListener("mousedown", handleClick);
   }, []);
 
-  const fetchQuote = async () => {
+  const fetchNewQuote = async () => {
+    setLoading(true);
+    try {
+      const res = await fetch("https://indian-quotes-api.vercel.app/api/quotes/random");
+      const data = await res.json();
+      const newQuote = { quote: data.quote, author: data.author };
+      setQuote(newQuote);
+      cacheQuote(newQuote);
+    } catch {
+      if (!quote) {
+        setQuote(FALLBACK);
+        cacheQuote(FALLBACK);
+      }
+    }
+    setLoading(false);
+  };
+
+  const handleClick = async () => {
     if (quote) {
       setOpen(!open);
       return;
     }
     setOpen(true);
-    setLoading(true);
-    try {
-      const res = await fetch("https://indian-quotes-api.vercel.app/api/quotes/random");
-      const data = await res.json();
-      setQuote({ quote: data.quote, author: data.author });
-    } catch {
-      setQuote({ quote: "The best way to find yourself is to lose yourself in the service of others.", author: "Mahatma Gandhi" });
-    }
-    setLoading(false);
+    await fetchNewQuote();
   };
 
   return (
     <div ref={ref} className="relative">
       <button
-        onClick={fetchQuote}
+        onClick={handleClick}
         className="flex items-center gap-1.5 text-sm hover:text-gray-600 transition-colors"
       >
         <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -72,13 +112,7 @@ export default function ThoughtOfTheDay() {
                 <button
                   onClick={async (e) => {
                     e.stopPropagation();
-                    setLoading(true);
-                    try {
-                      const res = await fetch("https://indian-quotes-api.vercel.app/api/quotes/random");
-                      const data = await res.json();
-                      setQuote({ quote: data.quote, author: data.author });
-                    } catch { /* keep current */ }
-                    setLoading(false);
+                    await fetchNewQuote();
                   }}
                   className="text-[10px] text-gray-400 hover:text-gray-600 uppercase tracking-wider"
                 >
