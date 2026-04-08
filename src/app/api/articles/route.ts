@@ -1,4 +1,5 @@
 import { NextRequest, NextResponse } from "next/server";
+import { revalidatePath } from "next/cache";
 import {
   getAllArticles,
   getArticleBySlug,
@@ -60,6 +61,8 @@ export async function POST(request: NextRequest) {
     };
 
     await saveArticle(article);
+    revalidatePath("/");
+    revalidatePath(`/section/${article.section}`);
     return NextResponse.json({ success: true, slug });
   } catch (err) {
     console.error("Failed to save article:", err);
@@ -102,6 +105,9 @@ export async function PUT(request: NextRequest) {
     };
 
     await saveArticle(article);
+    revalidatePath("/");
+    revalidatePath(`/section/${article.section}`);
+    revalidatePath(`/article/${article.slug}`);
     return NextResponse.json({ success: true, slug: data.slug });
   } catch (err) {
     console.error("Failed to update article:", err);
@@ -122,10 +128,16 @@ export async function DELETE(request: NextRequest) {
     return NextResponse.json({ error: "Slug is required" }, { status: 400 });
   }
 
+  const article = await getArticleBySlug(slug);
   const deleted = await deleteArticle(slug);
   if (!deleted) {
     return NextResponse.json({ error: "Article not found" }, { status: 404 });
   }
 
+  revalidatePath("/");
+  if (article) {
+    revalidatePath(`/section/${article.section}`);
+    revalidatePath(`/article/${article.slug}`);
+  }
   return NextResponse.json({ success: true });
 }

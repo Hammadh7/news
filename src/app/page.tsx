@@ -1,15 +1,15 @@
-import { getAllArticles, getFeaturedArticles, getBreakingNews } from "@/lib/articles";
+import { getAllArticles } from "@/lib/articles";
 import { siteConfig } from "@/lib/config";
 import ArticleCard from "@/components/ArticleCard";
 import AdPlaceholder from "@/components/AdPlaceholder";
 import Link from "next/link";
 
-export const dynamic = "force-dynamic";
+export const revalidate = 60;
 
 export default async function HomePage() {
   const allArticles = await getAllArticles();
-  const featured = await getFeaturedArticles();
-  const breaking = await getBreakingNews();
+  const featured = allArticles.filter((a) => a.featured);
+  const breaking = allArticles.filter((a) => a.breaking);
 
   // Group articles by section for section blocks
   const sectionGroups = siteConfig.sections
