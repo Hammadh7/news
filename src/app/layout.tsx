@@ -14,7 +14,7 @@ export const metadata: Metadata = {
     template: `%s | ${siteConfig.name}`,
   },
   description: siteConfig.description,
-  keywords: ["news", "india", "indian news", "insight dholi", "breaking news", "politics", "business", "technology", "sports", "entertainment", "health"],
+  keywords: ["news", "india", "indian news", "news dholi", "breaking news", "politics", "business", "technology", "sports", "entertainment", "health"],
   metadataBase: new URL(siteConfig.url),
   alternates: {
     canonical: "/",

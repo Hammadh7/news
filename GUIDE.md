@@ -1,4 +1,4 @@
-# The Daily Chronicle - Complete User Guide
+# News Dholi - Complete User Guide
 
 Welcome! This guide will help you manage your news website. You don't need any technical knowledge to publish articles.
 

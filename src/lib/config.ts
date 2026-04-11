@@ -1,5 +1,5 @@
 export const siteConfig = {
-  name: "The Insight Dholi",
+  name: "News Dholi",
   tagline: "Truth. Clarity. India.",
   description: "India's trusted source for news, analysis, and stories that matter.",
   url: process.env.NEXT_PUBLIC_SITE_URL || "http://localhost:3000",

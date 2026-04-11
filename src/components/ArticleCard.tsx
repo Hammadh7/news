@@ -43,7 +43,7 @@ export default function ArticleCard({
             />
           ) : (
             <div className="w-full h-full bg-gradient-to-br from-gray-100 to-gray-200 flex items-center justify-center">
-              <span className="text-gray-400 font-serif text-lg">The Daily Chronicle</span>
+              <span className="text-gray-400 font-serif text-lg">News Dholi</span>
             </div>
           )}
           <div className="absolute inset-0 bg-gradient-to-t from-black/70 via-black/20 to-transparent" />
@@ -92,7 +92,7 @@ export default function ArticleCard({
           </div>
         ) : (
           <div className="aspect-[3/2] bg-gradient-to-br from-gray-50 to-gray-100 mb-3 flex items-center justify-center">
-            <span className="text-gray-300 font-serif text-sm">The Daily Chronicle</span>
+            <span className="text-gray-300 font-serif text-sm">News Dholi</span>
           </div>
         )}
         <span className="text-[10px] font-sans font-bold uppercase tracking-wider text-gray-500">

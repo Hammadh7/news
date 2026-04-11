@@ -99,7 +99,7 @@ export default function AdminDashboard() {
         <div className="bg-white p-8 rounded-lg shadow-lg max-w-md w-full mx-4">
           <div className="text-center mb-8">
             <h1 className="font-serif text-3xl font-bold text-gray-900">Admin Panel</h1>
-            <p className="text-gray-500 font-sans mt-2">The Daily Chronicle</p>
+            <p className="text-gray-500 font-sans mt-2">News Dholi</p>
           </div>
 
           <div className="space-y-4">
